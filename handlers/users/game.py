@@ -3,15 +3,12 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from keyboards.inline.callback_data import action_callback
 from keyboards.inline.choice_buttons import move
-# from keyboards.inline.choice_buttons import choice
 from loader import dp, logger
-from mod_calc import sum_data, sub_data, mul_data, div_data
 
 nums = ""
-# board = list(range(1, 10))
-board = list("❤❤❤❤❤❤❤❤❤")
+# board = list(range(0, 9))
+board = list("▫▫▫▫▫▫▫▫▫")
 counter = 0
-
 
 
 @dp.message_handler(Command("start"))
@@ -20,39 +17,34 @@ async def show_field(message: Message):
                          reply_markup=move(board))
 
 
-# @dp.callback_query_handler(text_contains="<")
-# async def delete_char(call: CallbackQuery):
-#     global nums
-#     if nums:
-#         nums = nums[:-1]
-#         if not nums:
-#             await call.message.edit_text("0", reply_markup=move(board))
-#         await call.message.edit_text(f"{nums}", reply_markup=move(board))
-#     else:
-#         await call.answer(cache_time=20)
-
-
-# @dp.callback_query_handler(text_contains="C")
-# async def erase(call: CallbackQuery):
-#     global nums
-#     nums = ""
-#     await call.message.edit_text("0", reply_markup=move(board))
-
-
 @dp.callback_query_handler(action_callback.filter())
 async def nums_choice(call: CallbackQuery, callback_data: dict):
     global nums, board
-
+    global counter
     await call.answer(cache_time=1)
     data = callback_data["item_name"]
     nums += data
-    # idata = int(data)
-    print(data)
-    print(type(data))
-    # print(type(idata),idata**3)
     board[int(data)] = "X"
+    if counter % 2 == 0:
+        board[int(data)] = "❌"
+    else:
+        board[int(data)] = "⭕"
+    counter += 1
+    if counter > 4:
+        tmp = await check_win(board)
+        if tmp:
+            print(tmp, "выиграл!")
+            win = True
+
     logger.debug(f"Ход: {counter}, board: {board}")
     await call.message.edit_text(f"{nums}", reply_markup=move(board))
     logger.debug(f'Пользователь ввел {nums}')
 
 
+async def check_win(boar):
+    win_coord = ((0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6),
+                 (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6))
+    for each in win_coord:
+        if boar[each[0]] == boar[each[1]] == boar[each[2]] != "▫":
+            return boar[each[0]]
+    return False
