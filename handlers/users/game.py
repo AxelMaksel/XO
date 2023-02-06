@@ -40,8 +40,9 @@ async def nums_choice(call: CallbackQuery, callback_data: dict):
                 # print(tmp, "выиграл!")
                 await call.message.answer(f"{tmp}, выиграл!")
         if counter == 9:
-            await call.message.answer(f"НИЧЬЯ!")
-
+            await call.message.answer("НИЧЬЯ!")
+    else:
+        await call.message.answer("Клетка занята")
     logger.debug(f"Ход: {counter}, board: {board}")
     await call.message.edit_text(f"{nums}", reply_markup=move(board))
     logger.debug(f'Пользователь ввел {nums}')
