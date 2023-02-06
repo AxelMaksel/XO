@@ -13,8 +13,11 @@ counter = 0
 
 @dp.message_handler(Command("start"))
 async def show_field(message: Message):
-    await message.answer(text="Let's calculate",
+    global board
+    board = list("▫▫▫▫▫▫▫▫▫")
+    await message.answer(text="Game X-O !!! Go...",
                          reply_markup=move(board))
+    
 
 
 @dp.callback_query_handler(action_callback.filter())
@@ -24,17 +27,20 @@ async def nums_choice(call: CallbackQuery, callback_data: dict):
     await call.answer(cache_time=1)
     data = callback_data["item_name"]
     nums += data
-    board[int(data)] = "X"
-    if counter % 2 == 0:
-        board[int(data)] = "❌"
-    else:
-        board[int(data)] = "⭕"
-    counter += 1
-    if counter > 4:
-        tmp = await check_win(board)
-        if tmp:
-            print(tmp, "выиграл!")
-            win = True
+    # board[int(data)] = "X"
+    if board[int(data)] == "▫":
+        if counter % 2 == 0:
+            board[int(data)] = "❌"
+        else:
+            board[int(data)] = "⭕"
+        counter += 1
+        if counter > 4:
+            tmp = await check_win(board)
+            if tmp:
+                # print(tmp, "выиграл!")
+                await call.message.answer(f"{tmp}, выиграл!")
+        if counter == 9:
+            await call.message.answer(f"НИЧЬЯ!")
 
     logger.debug(f"Ход: {counter}, board: {board}")
     await call.message.edit_text(f"{nums}", reply_markup=move(board))
